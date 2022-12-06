@@ -5,60 +5,29 @@ import matplotlib.pyplot as plt
 plt.grid(linestyle='--', linewidth=0.5)
 plt.gca().set_aspect('equal', adjustable='box')
 
+#Load Bridge Data
+try:
+    f = open('TestBridgeData.json')
+except:
+    print("No bridge data file could be found.")
+    exit
+else:
+    data = json.load(f)
+    f.close()
 
 def main():
-    print("Starting...")
 
-    #Load Bridge Data
-    try:
-        f = open('Bridge.json')
-    except:
-        print("No bridge data file could be found.")
-        exit
-    else:
-        data = json.load(f)
-        f.close()
-
-    class Vertex(object):
-        def __init__(self, vertNum):
-            self.vertex = vertNum
-            self.position = data["Vertices"][vertNum-1]["cords"]
-            self.x = self.position[0]
-            self.y = self.position[1]
-            self.adjEdges = data["Vertices"][vertNum-1]["adjEdges"]
-            self.isFixed = data["Vertices"][vertNum-1]["fixed"]
-
-    def vertInfo(vertNum: int):
-        vertInfo = Vertex(vertNum)
-        return vertInfo
-
-    fixedPoints = []
     #plot verts
     for vert in range(1, len(data["Vertices"])+1):
-        if vertInfo(vert).isFixed:
-            plt.plot(vertInfo(vert).x, vertInfo(vert).y, "ko")
-            fixedPoints.append(vert)
-        else:
-            plt.plot(vertInfo(vert).x, vertInfo(vert).y, "bo")
-
-        plt.annotate(vert, (vertInfo(vert).x, vertInfo(vert).y), color="m")
+        plotVert(vert)
 
     #plot edges
     for edge in data["Edges"]:
-        vertXs = vertInfo(edge["vertices"][0]).x, vertInfo(edge["vertices"][1]).x
-        vertYs = vertInfo(edge["vertices"][0]).y, vertInfo(edge["vertices"][1]).y
-        plt.plot(vertXs, vertYs, "g") #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
-
-        centerx, centery = sum(vertXs)/2, sum(vertYs)/2 #Midpoint formula
-        plt.annotate(edge["edge"], (centerx, centery), color="c")
+        plotEdge(edge)
 
     #Add and label loads
     for load in data["Loads"]:
-        loadX = vertInfo(load["loadVertex"]).x
-        loadY = vertInfo(load["loadVertex"]).y
-        plt.arrow(x=loadX, y=loadY+(load["loadForce"]/100),
-                  dx=0,    dy=-(load["loadForce"]/100)+.1,
-                  width=0.03, color="r")
+        plotLoad(load)
 
     #Get fixed points and find distance between them
     dist = vertInfo(fixedPoints[1]).x - vertInfo(fixedPoints[0]).x
@@ -98,9 +67,57 @@ def main():
             
             forceOnEdge = Force*math.sin(radToHorizontal)
         #Store forces on each edge
-        
-    
+
+fixedPoints = []
+
+class Vertex(object):
+    def __init__(self, vertNum):
+        self.vertex = vertNum
+        self.position = data["Vertices"][vertNum-1]["cords"]
+        self.x = self.position[0]
+        self.y = self.position[1]
+        self.adjEdges = data["Vertices"][vertNum-1]["adjEdges"]
+        self.isFixed = data["Vertices"][vertNum-1]["fixed"]
+
+def vertInfo(vertNum: int):
+    vertInfo = Vertex(vertNum)
+    return vertInfo
+
+def plotVert(vert):
+    if vertInfo(vert).isFixed:
+        plt.plot(vertInfo(vert).x, vertInfo(vert).y, "ko")
+        fixedPoints.append(vert)
+    else:
+        plt.plot(vertInfo(vert).x, vertInfo(vert).y, "bo")
+
+        plt.annotate(vert, (vertInfo(vert).x, vertInfo(vert).y), color="m")
+
+def plotVertex(vert):
+    if vertInfo(vert).isFixed:
+        plt.plot(vertInfo(vert).x, vertInfo(vert).y, "ko")
+        fixedPoints.append(vert)
+    else:
+        plt.plot(vertInfo(vert).x, vertInfo(vert).y, "bo")
+
+    plt.annotate(vert, (vertInfo(vert).x, vertInfo(vert).y), color="m")
+
+def plotEdge(edge):
+    vertXs = vertInfo(edge["vertices"][0]).x, vertInfo(edge["vertices"][1]).x
+    vertYs = vertInfo(edge["vertices"][0]).y, vertInfo(edge["vertices"][1]).y
+    plt.plot(vertXs, vertYs, "g") #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
+
+    centerx, centery = sum(vertXs)/2, sum(vertYs)/2 #Midpoint formula
+    plt.annotate(edge["edgeNumber"], (centerx, centery), color="c")
+
+def plotLoad(load):
+    loadX = vertInfo(load["loadVertex"]).x
+    loadY = vertInfo(load["loadVertex"]).y
+    plt.arrow(x=loadX, y=loadY,
+                dx=0,    dy=load["loadForce"]/50,
+                width=0.03, color="r")
+    plt.annotate(load["loadNumber"], (loadX, (loadY+load["loadForce"]/50)/2), color="c")
 
 if __name__=="__main__":
+    print("Starting...")
     main()
     plt.show()
