@@ -1,5 +1,6 @@
 import json
 import math
+import numpy as np
 import matplotlib.pyplot as plt
 
 plt.grid(linestyle='--', linewidth=0.5)
@@ -17,103 +18,71 @@ else:
 
 def main():
 
-    #plot verts
-    for vert in range(1, len(data["Vertices"])+1):
-        plotVert(vert)
+    #plot nodes
+    for node in range(1, len(data["Nodes"])+1):
+        plotNode(node)
 
-    #plot edges
-    for edge in data["Edges"]:
-        plotEdge(edge)
+    #plot members
+    for member in data["Members"]:
+        plotMember(member)
 
     #Add and label loads
     for load in data["Loads"]:
         plotLoad(load)
-
-    #Get fixed points and find distance between them
-    dist = vertInfo(fixedPoints[1]).x - vertInfo(fixedPoints[0]).x
-    #Get the reaction force of the 2nd fixed point
-    forceOfLoads = 0
-    sumOfLoads = 0
-    for load in data["Loads"]:
-        forceOfLoads += load["loadForce"] * vertInfo(load["loadVertex"]).x
-        sumOfLoads += load["loadForce"]
-    reactionForceTwo = forceOfLoads / dist
-    #Subsequently calculate the 1st reaction force
-    reactionForceOne = sumOfLoads - reactionForceTwo
-
-    print(reactionForceOne, reactionForceTwo)
     
+    trussAngleMatrix = np.zeros((len(data["Nodes"])*2, len(data["Members"])+3))
+    for member in data["Members"]:
+        node1 = member["nodes"][0]
+        node2 = member["nodes"][1]
+        #get position of both nodes
+        #find inverse tan of (y2-y1)/(x2-x1)
+        angleToHorizontal = math.atan((nodeInfo(node2).y-nodeInfo(node1).y)/
+                          (nodeInfo(node2).x-nodeInfo(node1).x))
+        #get cos and sin of angle
+        matrixAngleX =  math.cos(angleToHorizontal)
+        matrixAngleY =  math.sin(angleToHorizontal)
+        #add to angles matrix
+        trussAngleMatrix[member["memberNum"]-1, member["memberNum"]-1]
 
-    #For each load
-    for load in data["Loads"]:
-        #Find vertex and force
-        loadVertex = load["loadVertex"]
-        Force = load["loadForce"]
-        #Find all edges connected to vertex
-        adjacentEdges = vertInfo(loadVertex).adjEdges
-        #For each edge find the start and end points
-        for edge in adjacentEdges:
-            start = vertInfo(data["Edges"][edge-1]["vertices"][0]).position
-            end = vertInfo(data["Edges"][edge-1]["vertices"][1]).position
-            b = start[0] - end[0] # delta X
-            a = start[1] - end[1] # delta Y
-            c = math.sqrt(pow(b,2)+pow(a,2)) #PYTHAGORAS BABY!
+    print(trussAngleMatrix)
 
-            #Find all angles of edges to the horizontal
-            radToHorizontal = math.acos((pow(b,2)+pow(c,2)-pow(a,2)) / abs(2*b*c))
-            degreesToHorizontal = math.degrees(radToHorizontal)
+class Node(object):
+    def __init__(self, nodeNum):
+        self.nodeex = nodeNum
+        self.position = data["Nodes"][nodeNum-1]["cords"]
+        self.x = self.position[0]
+        self.y = self.position[1]
+        self.adjMembers = data["Nodes"][nodeNum-1]["adjMembers"]
+        self.isFixed = data["Nodes"][nodeNum-1]["fixed"]
 
-            #Calculate the forces on each adjacent edge
-            
-            forceOnEdge = Force*math.sin(radToHorizontal)
-        #Store forces on each edge
+def nodeInfo(nodeNum: int):
+    nodeInfo = Node(nodeNum)
+    return nodeInfo
 
 fixedPoints = []
 
-class Vertex(object):
-    def __init__(self, vertNum):
-        self.vertex = vertNum
-        self.position = data["Vertices"][vertNum-1]["cords"]
-        self.x = self.position[0]
-        self.y = self.position[1]
-        self.adjEdges = data["Vertices"][vertNum-1]["adjEdges"]
-        self.isFixed = data["Vertices"][vertNum-1]["fixed"]
-
-def vertInfo(vertNum: int):
-    vertInfo = Vertex(vertNum)
-    return vertInfo
-
-def plotVert(vert):
-    if vertInfo(vert).isFixed:
-        plt.plot(vertInfo(vert).x, vertInfo(vert).y, "ko")
-        fixedPoints.append(vert)
+def plotNode(node):
+    if nodeInfo(node).isFixed:
+        plt.plot(nodeInfo(node).x, nodeInfo(node).y, "ko")
+        fixedPoints.append(node)
     else:
-        plt.plot(vertInfo(vert).x, vertInfo(vert).y, "bo")
+        plt.plot(nodeInfo(node).x, nodeInfo(node).y, "bo")
 
-        plt.annotate(vert, (vertInfo(vert).x, vertInfo(vert).y), color="m")
+        plt.annotate(node, (nodeInfo(node).x, nodeInfo(node).y), color="m")
 
-def plotVertex(vert):
-    if vertInfo(vert).isFixed:
-        plt.plot(vertInfo(vert).x, vertInfo(vert).y, "ko")
-        fixedPoints.append(vert)
-    else:
-        plt.plot(vertInfo(vert).x, vertInfo(vert).y, "bo")
+def plotMember(member):
+    nodeXs = nodeInfo(member["nodes"][0]).x, nodeInfo(member["nodes"][1]).x
+    nodeYs = nodeInfo(member["nodes"][0]).y, nodeInfo(member["nodes"][1]).y
+    plt.plot(nodeXs, nodeYs, "g") #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
 
-    plt.annotate(vert, (vertInfo(vert).x, vertInfo(vert).y), color="m")
-
-def plotEdge(edge):
-    vertXs = vertInfo(edge["vertices"][0]).x, vertInfo(edge["vertices"][1]).x
-    vertYs = vertInfo(edge["vertices"][0]).y, vertInfo(edge["vertices"][1]).y
-    plt.plot(vertXs, vertYs, "g") #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
-
-    centerx, centery = sum(vertXs)/2, sum(vertYs)/2 #Midpoint formula
-    plt.annotate(edge["edgeNumber"], (centerx, centery), color="c")
+    centerx, centery = sum(nodeXs)/2, sum(nodeYs)/2 #Midpoint formula
+    plt.annotate(member["memberNum"], (centerx, centery), color="c")
 
 def plotLoad(load):
-    loadX = vertInfo(load["loadVertex"]).x
-    loadY = vertInfo(load["loadVertex"]).y
+    loadX = nodeInfo(load["loadVertex"]).x
+    loadY = nodeInfo(load["loadVertex"]).y
     plt.arrow(x=loadX, y=loadY,
-                dx=0,    dy=load["loadForce"]/50,
+                dx=0,    dy=-load["loadForce"]/50,
                 width=0.03, color="r")
     plt.annotate(load["loadNumber"], (loadX, (loadY+load["loadForce"]/50)/2), color="c")
 

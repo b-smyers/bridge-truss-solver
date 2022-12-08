@@ -1,21 +1,21 @@
 {
-    "Vertices": [
-        {"vertexNumber": 1, "cords": [0, 0],     "adjEdges": [1,2,3], "fixed": true},
-        {"vertexNumber": 2, "cords": [2, 0],     "adjEdges": [1,4,5], "fixed": false},
-        {"vertexNumber": 3, "cords": [4, 0],     "adjEdges": [2,7], "fixed": true},
-        {"vertexNumber": 4, "cords": [1, 1.732], "adjEdges": [3,4,6], "fixed": false},
-        {"vertexNumber": 5, "cords": [3, 1.732], "adjEdges": [5,6,7], "fixed": false}
+    "Nodes": [
+        {"nodeNum": 1, "cords": [0, 0],     "adjMembers": [1,2,3], "fixed": true},
+        {"nodeNum": 2, "cords": [2, 0],     "adjMembers": [1,4,5], "fixed": false},
+        {"nodeNum": 3, "cords": [4, 0],     "adjMembers": [2,7], "fixed": true},
+        {"nodeNum": 4, "cords": [1, 1.732], "adjMembers": [3,4,6], "fixed": false},
+        {"nodeNum": 5, "cords": [3, 1.732], "adjMembers": [5,6,7], "fixed": false}
     ],
-    "Edges": [
-        {"edgeNumber": 1, "vertices": [1,2]},
-        {"edgeNumber": 2, "vertices": [1,3]},
-        {"edgeNumber": 3, "vertices": [1,4]},
-        {"edgeNumber": 4, "vertices": [2,4]},
-        {"edgeNumber": 5, "vertices": [2,5]},
-        {"edgeNumber": 6, "vertices": [4,5]},
-        {"edgeNumber": 7, "vertices": [3,5]}
+    "Members": [
+        {"memberNum": 1, "nodes": [1,2]},
+        {"memberNum": 2, "nodes": [1,3]},
+        {"memberNum": 3, "nodes": [1,4]},
+        {"memberNum": 4, "nodes": [2,4]},
+        {"memberNum": 5, "nodes": [2,5]},
+        {"memberNum": 6, "nodes": [4,5]},
+        {"memberNum": 7, "nodes": [3,5]}
     ],
     "Loads": [
-        {"loadNumber": 1, "loadVertex": 2, "loadForce": -15}
+        {"loadNumber": 1, "loadVertex": 2, "loadForce": 10}
     ]
 }
