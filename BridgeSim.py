@@ -8,7 +8,7 @@ plt.gca().set_aspect('equal', adjustable='box')
 
 #Load Bridge Data
 try:
-    f = open('TestBridgeData1.json')
+    f = open('TestBridgeData2.json')
 except:
     raise Exception("No bridge data file could be found.")
 else:
@@ -57,20 +57,19 @@ def preRunBridgeChecker():
         raise Exception('There are no loads on the bridge, try adding some.')
 
 def main():
-
-    #plot nodes
+    #Plot and label nodes
     for node in data["Nodes"]:
         plotNode(node["nodeNum"])
 
-    #plot members
+    #Plot and label members
     for member in data["Members"]:
         pass
         #plotMember(member)
 
-    #Add and label loads
+    #Plot and label loads
     for load in data["Loads"]:
         plotLoad(load)
-    
+
     trussAngleMatrix = np.zeros((len(data["Nodes"])*2, len(data["Members"])+3))
     for member in data["Members"]:
         node1 = member["nodes"][0]
@@ -88,7 +87,7 @@ def main():
         if nodeInfo(node2).y < nodeInfo(node1).y:
             matrixAngleY = -matrixAngleY
 
-        #add to angles matrix
+        #add reaction angles to matrix
         trussAngleMatrix[node1*2, member["memberNum"]] = matrixAngleX #1 to 2 cos()
         trussAngleMatrix[node1*2+1, member["memberNum"]] = matrixAngleY #1 to 2 sin()
         trussAngleMatrix[node2*2, member["memberNum"]] = -matrixAngleX #2 to 1 cos()
@@ -151,9 +150,9 @@ def plotLoad(load):
     loadX = nodeInfo(load["loadNode"]).x
     loadY = nodeInfo(load["loadNode"]).y
     plt.arrow(x=loadX, y=loadY,
-                dx=0,    dy=-load["loadNode"]/25,
+                dx=0,    dy=-load["loadForce"]/100,
                 width=0.03, color="r")
-    plt.annotate(load["loadNumber"], (loadX, (loadY+load["loadNode"]/25)/2), color="c")
+    plt.annotate(load["loadNumber"], (loadX, (loadY-load["loadForce"]/100)/2), color="c")
 
 def plotTrussForces(forces):
     i = 0
@@ -163,7 +162,13 @@ def plotTrussForces(forces):
         plt.plot(nodeXs, nodeYs, "g") #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
 
         centerx, centery = sum(nodeXs)/2, sum(nodeYs)/2 #Midpoint formula
-        plt.annotate(round(forces[i], 2), (centerx, centery), color="k")
+
+        angleToHorizontal = math.degrees(math.atan((nodeYs[1]-nodeYs[0])/
+                                                   (nodeXs[1]-nodeXs[0])))
+
+        plt.annotate(round(forces[i], 2), (centerx, centery), rotation=angleToHorizontal, 
+                     color="k", ha='center', va='center', 
+                     bbox=dict(facecolor='white', edgecolor='green', boxstyle='square'))
         i += 1
 
 if __name__=="__main__":
