@@ -1,33 +1,33 @@
 {
     "Nodes": [
-        {"nodeNum": 1, "cords": [0,0], "fixedNode?": false, "rollingNode?": false},
-        {"nodeNum": 2, "cords": [25,0], "fixedNode?": false, "rollingNode?": true},
-        {"nodeNum": 3, "cords": [-25,0], "fixedNode?": true, "rollingNode?": false},
-        {"nodeNum": 4, "cords": [6,14], "fixedNode?": false, "rollingNode?": false},
-        {"nodeNum": 5, "cords": [-6,14], "fixedNode?": false, "rollingNode?": false},
-        {"nodeNum": 6, "cords": [-15,11], "fixedNode?": false, "rollingNode?": false},
-        {"nodeNum": 7, "cords": [-21,7], "fixedNode?": false, "rollingNode?": false},
-        {"nodeNum": 8, "cords": [21,7], "fixedNode?": false, "rollingNode?": false},
-        {"nodeNum": 9, "cords": [15,11], "fixedNode?": false, "rollingNode?": false}
+        {"nodeNum": 0, "cords": [0,0],    "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 1, "cords": [25,0],   "fixedNode?": false, "rollingNode?": true },
+        {"nodeNum": 2, "cords": [-25,0],  "fixedNode?": true,  "rollingNode?": false},
+        {"nodeNum": 3, "cords": [6,14],   "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 4, "cords": [-6,14],  "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 5, "cords": [-15,11], "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 6, "cords": [-21,7],  "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 7, "cords": [21,7],   "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 8, "cords": [15,11],  "fixedNode?": false, "rollingNode?": false}
     ],
     "Members": [
-        {"memberNum": 1, "nodes": [1,3]},
-        {"memberNum": 2, "nodes": [1,2]},
-        {"memberNum": 3, "nodes": [1,7]},
-        {"memberNum": 4, "nodes": [1,8]},
-        {"memberNum": 5, "nodes": [1,6]},
-        {"memberNum": 6, "nodes": [1,9]},
-        {"memberNum": 7, "nodes": [1,5]},
-        {"memberNum": 8, "nodes": [1,4]},
-        {"memberNum": 9, "nodes": [3,7]},
-        {"memberNum": 10, "nodes": [2,8]},
-        {"memberNum": 11, "nodes": [6,7]},
-        {"memberNum": 12, "nodes": [8,9]},
-        {"memberNum": 13, "nodes": [5,6]},
-        {"memberNum": 14, "nodes": [4,9]},
-        {"memberNum": 15, "nodes": [4,5]}
+        {"memberNum": 0,  "nodes": [0,2]},
+        {"memberNum": 1,  "nodes": [0,1]},
+        {"memberNum": 2,  "nodes": [0,6]},
+        {"memberNum": 3,  "nodes": [0,7]},
+        {"memberNum": 4,  "nodes": [0,5]},
+        {"memberNum": 5,  "nodes": [0,8]},
+        {"memberNum": 6,  "nodes": [0,4]},
+        {"memberNum": 7,  "nodes": [0,3]},
+        {"memberNum": 8,  "nodes": [2,6]},
+        {"memberNum": 9,  "nodes": [1,7]},
+        {"memberNum": 10, "nodes": [5,6]},
+        {"memberNum": 11, "nodes": [7,8]},
+        {"memberNum": 12, "nodes": [4,5]},
+        {"memberNum": 13, "nodes": [3,8]},
+        {"memberNum": 14, "nodes": [3,4]}
     ],
     "Loads": [
-        {"loadNumber": 1, "loadNode": 1, "loadForce": 20}
+        {"loadNumber": 0, "loadNode": 0, "loadForce": 20}
     ]
 }

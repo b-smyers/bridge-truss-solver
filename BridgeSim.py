@@ -59,8 +59,8 @@ def preRunBridgeChecker():
 def main():
 
     #plot nodes
-    for node in range(1, len(data["Nodes"])+1):
-        plotNode(node)
+    for node in data["Nodes"]:
+        plotNode(node["nodeNum"])
 
     #plot members
     for member in data["Members"]:
@@ -89,19 +89,19 @@ def main():
             matrixAngleY = -matrixAngleY
 
         #add to angles matrix
-        trussAngleMatrix[(node1-1)*2, member["memberNum"]-1] = matrixAngleX #1 to 2 cos()
-        trussAngleMatrix[(node1-1)*2+1, member["memberNum"]-1] = matrixAngleY #1 to 2 sin()
-        trussAngleMatrix[(node2-1)*2, member["memberNum"]-1] = -matrixAngleX #2 to 1 cos()
-        trussAngleMatrix[(node2-1)*2+1, member["memberNum"]-1] = -matrixAngleY #2 to 1 sin()
+        trussAngleMatrix[node1*2, member["memberNum"]] = matrixAngleX #1 to 2 cos()
+        trussAngleMatrix[node1*2+1, member["memberNum"]] = matrixAngleY #1 to 2 sin()
+        trussAngleMatrix[node2*2, member["memberNum"]] = -matrixAngleX #2 to 1 cos()
+        trussAngleMatrix[node2*2+1, member["memberNum"]] = -matrixAngleY #2 to 1 sin()
 
     #Adding reaction force angles to angle matrix, all reaction force angles will be completely vertical or horizontal
     ##The last three columns for the matrix will always be ordered {Reaction2y, Reaction1x, Reaction1y}
     for node in constrainedNodes:
         if nodeInfo(node).isFixed:
-            trussAngleMatrix[(nodeInfo(node).nodeNum-1)*2, trussAngleMatrix.shape[1]-1] = 1
-            trussAngleMatrix[(nodeInfo(node).nodeNum-1)*2+1, trussAngleMatrix.shape[1]-2] = 1
+            trussAngleMatrix[(nodeInfo(node).nodeNum)*2, trussAngleMatrix.shape[1]-1] = 1
+            trussAngleMatrix[(nodeInfo(node).nodeNum)*2+1, trussAngleMatrix.shape[1]-2] = 1
         elif nodeInfo(node).isRolling:
-            trussAngleMatrix[(nodeInfo(node).nodeNum-1)*2+1, trussAngleMatrix.shape[1]-3] = 1
+            trussAngleMatrix[(nodeInfo(node).nodeNum)*2+1, trussAngleMatrix.shape[1]-3] = 1
 
     #Inverse the angle matrix (AngleMatrix^-1 * Coeffecients = Forces)
     inverseTrussAngleMatrix = np.linalg.inv(trussAngleMatrix)
@@ -109,7 +109,7 @@ def main():
     #Make empty list, add load to list, Transpose.
     coeffecientMatrix = np.zeros(len(data["Nodes"])*2)
     for load in data["Loads"]:
-        coeffecientMatrix[(load["loadNode"]-1)*2+1] = load["loadForce"]
+        coeffecientMatrix[load["loadNode"]*2+1] = load["loadForce"]
 
     trussForceMatrix = inverseTrussAngleMatrix.dot(coeffecientMatrix.T)
 
@@ -118,11 +118,11 @@ def main():
 class Node(object):
     def __init__(self, nodeNum):
         self.nodeNum = nodeNum
-        self.position = data["Nodes"][nodeNum-1]["cords"]
+        self.position = data["Nodes"][nodeNum]["cords"]
         self.x = self.position[0]
         self.y = self.position[1]
-        self.isFixed = data["Nodes"][nodeNum-1]["fixedNode?"]
-        self.isRolling = data["Nodes"][nodeNum-1]["rollingNode?"]
+        self.isFixed = data["Nodes"][nodeNum]["fixedNode?"]
+        self.isRolling = data["Nodes"][nodeNum]["rollingNode?"]
 
 def nodeInfo(nodeNum: int):
     nodeInfo = Node(nodeNum)
