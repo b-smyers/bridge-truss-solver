@@ -8,7 +8,7 @@ plt.gca().set_aspect('equal', adjustable='box')
 
 #Load Bridge Data
 try:
-    f = open('TestBridgeData.json')
+    f = open('TestBridgeData2.json')
 except:
     print("No bridge data file could be found.")
     exit
@@ -40,8 +40,14 @@ def main():
         angleToHorizontal = math.atan((nodeInfo(node2).y-nodeInfo(node1).y)/
                                       (nodeInfo(node2).x-nodeInfo(node1).x))
         #get cos and sin of angle
-        matrixAngleX = math.cos(angleToHorizontal)
-        matrixAngleY = math.sin(angleToHorizontal)
+        matrixAngleX = abs(math.cos(angleToHorizontal))
+        matrixAngleY = abs(math.sin(angleToHorizontal))
+        #Determine positive or negative by the direction of member
+        if nodeInfo(node2).x < nodeInfo(node1).x:
+            matrixAngleX = -matrixAngleX
+        if nodeInfo(node2).y < nodeInfo(node1).y:
+            matrixAngleY = -matrixAngleY
+
         #add to angles matrix
         trussAngleMatrix[(node1-1)*2, member["memberNum"]-1] = matrixAngleX #1 to 2 cos()
         trussAngleMatrix[(node1-1)*2+1, member["memberNum"]-1] = matrixAngleY #1 to 2 sin()
@@ -56,12 +62,11 @@ def main():
             trussAngleMatrix[(nodeInfo(node).nodeNum-1)*2+1, trussAngleMatrix.shape[1]-2] = 1
         elif nodeInfo(node).isRolling:
             trussAngleMatrix[(nodeInfo(node).nodeNum-1)*2+1, trussAngleMatrix.shape[1]-3] = 1
-    print(trussAngleMatrix)
 
+    #Inverse the angle matrix (AngleMatrix^-1 * Coeffecients = Forces)
     inverseTrussAngleMatrix = np.linalg.inv(trussAngleMatrix)
 
-    print(inverseTrussAngleMatrix) ## I Suspect their is an issue with these values
-
+    #Make empty list, add load to list, Transpose.
     coeffecientMatrix = np.zeros(len(data["Nodes"])*2)
     for load in data["Loads"]:
         coeffecientMatrix[(load["loadNode"]-1)*2+1] = load["loadForce"]
@@ -77,7 +82,6 @@ class Node(object):
         self.position = data["Nodes"][nodeNum-1]["cords"]
         self.x = self.position[0]
         self.y = self.position[1]
-        self.adjMembers = data["Nodes"][nodeNum-1]["adjMembers"]
         self.isFixed = data["Nodes"][nodeNum-1]["fixedNode?"]
         self.isRolling = data["Nodes"][nodeNum-1]["rollingNode?"]
 

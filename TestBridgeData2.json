@@ -1,0 +1,34 @@
+{
+    "Nodes": [
+        {"nodeNum": 1, "cords": [0,0], "fixedNode?": true, "rollingNode?": false},
+        {"nodeNum": 2, "cords": [2,0], "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 3, "cords": [4,0], "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 4, "cords": [6,0], "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 5, "cords": [8,0], "fixedNode?": false, "rollingNode?": true},
+        {"nodeNum": 6, "cords": [1,1.732], "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 7, "cords": [3,1.732], "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 8, "cords": [5,1.732], "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 9, "cords": [7,1.732], "fixedNode?": false, "rollingNode?": false}
+    ],
+    "Members": [
+        {"memberNum": 1, "nodes": [1,2]},
+        {"memberNum": 2, "nodes": [2,3]},
+        {"memberNum": 3, "nodes": [3,4]},
+        {"memberNum": 4, "nodes": [4,5]},
+        {"memberNum": 5, "nodes": [1,6]},
+        {"memberNum": 6, "nodes": [2,6]},
+        {"memberNum": 7, "nodes": [2,7]},
+        {"memberNum": 8, "nodes": [3,7]},
+        {"memberNum": 9, "nodes": [3,8]},
+        {"memberNum": 10, "nodes": [4,8]},
+        {"memberNum": 11, "nodes": [4,9]},
+        {"memberNum": 12, "nodes": [5,9]},
+        {"memberNum": 13, "nodes": [6,7]},
+        {"memberNum": 14, "nodes": [7,8]},
+        {"memberNum": 15, "nodes": [8,9]}
+    ],
+    "Loads": [
+        {"loadNumber": 1, "loadNode": 3, "loadForce": 10},
+        {"loadNumber": 2, "loadNode": 7, "loadForce": 8.66}
+    ]
+}

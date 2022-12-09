@@ -8,7 +8,7 @@
     ],
     "Members": [
         {"memberNum": 1, "nodes": [1,2]},
-        {"memberNum": 2, "nodes": [1,3]},
+        {"memberNum": 2, "nodes": [2,3]},
         {"memberNum": 3, "nodes": [1,4]},
         {"memberNum": 4, "nodes": [2,4]},
         {"memberNum": 5, "nodes": [2,5]},
