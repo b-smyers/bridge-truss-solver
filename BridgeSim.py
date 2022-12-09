@@ -8,13 +8,53 @@ plt.gca().set_aspect('equal', adjustable='box')
 
 #Load Bridge Data
 try:
-    f = open('TestBridgeData3.json')
+    f = open('TestBridgeData1.json')
 except:
-    print("No bridge data file could be found.")
-    exit
+    raise Exception("No bridge data file could be found.")
 else:
     data = json.load(f)
     f.close()
+
+def preRunBridgeChecker():
+    print("Running Pre-run Bridge Checks...")
+    numOfNodes = len(data["Nodes"])
+    numOfMembers = len(data["Members"])
+    numOfLoads = len(data["Loads"])
+    numOfFixedNodes = 0
+    numOfRollingNodes = 0
+
+    for node in data["Nodes"]:
+        if node["fixedNode?"] and node["rollingNode?"]:
+            raise Exception('Nodes cannot be fixed and rolling, make sure your anchored nodes are fixed OR rolling.')
+        elif node["fixedNode?"]:
+            numOfFixedNodes += 1
+        elif node["rollingNode?"]:
+            numOfRollingNodes += 1
+
+    #Fixed and rolling node error catching
+    if numOfFixedNodes > 1:
+        raise Exception('This simulation does not support more than one fixed node at a time.')
+    elif numOfFixedNodes < 1:
+        raise Exception('This simulation requires at least one fixed node.')
+    if numOfRollingNodes > 1:
+        raise Exception('This simulation does not support more than one rolling node at a time.')
+    elif numOfRollingNodes < 1:
+        raise Exception('This simulation requires at least one rolling node.')
+
+    #Member error catching
+    if numOfNodes*2 > numOfMembers+3:
+        raise Exception(f'There are too little members, try adding {(numOfNodes*2)-(numOfMembers+3)} more.')
+    elif numOfNodes*2 < numOfMembers+3:
+        raise Exception(f'There are too many members, try removing {(numOfMembers+3)-(numOfNodes*2)} more.')
+    
+    #Load error catching
+    loadNodes = []
+    for load in data["Loads"]:
+        loadNodes.append(load["loadNode"])
+    if sorted(loadNodes) != sorted(list(set(loadNodes))):
+        raise Exception('There can only be a maximum of one load per node, make sure there isn\'t more than one load per node')
+    if numOfLoads <= 0:
+        raise Exception('There are no loads on the bridge, try adding some.')
 
 def main():
 
@@ -73,7 +113,6 @@ def main():
 
     trussForceMatrix = inverseTrussAngleMatrix.dot(coeffecientMatrix.T)
 
-    print(trussForceMatrix)
     plotTrussForces(trussForceMatrix)
 
 class Node(object):
@@ -129,5 +168,6 @@ def plotTrussForces(forces):
 
 if __name__=="__main__":
     print("Starting...")
+    preRunBridgeChecker()
     main()
     plt.show()

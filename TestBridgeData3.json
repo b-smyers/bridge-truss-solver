@@ -28,7 +28,6 @@
         {"memberNum": 15, "nodes": [4,5]}
     ],
     "Loads": [
-        {"loadNumber": 1, "loadNode": 1, "loadForce": 20},
-        {"loadNumber": 1, "loadNode": 7, "loadForce": 17}
+        {"loadNumber": 1, "loadNode": 1, "loadForce": 20}
     ]
 }
