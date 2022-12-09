@@ -8,7 +8,7 @@ plt.gca().set_aspect('equal', adjustable='box')
 
 #Load Bridge Data
 try:
-    f = open('TestBridgeData2.json')
+    f = open('TestBridgeData3.json')
 except:
     print("No bridge data file could be found.")
     exit
