@@ -8,7 +8,7 @@ plt.gca().set_aspect('equal', adjustable='box')
 
 #Load Bridge Data
 try:
-    f = open('TestBridgeData2.json')
+    f = open('TestBridgeData4.json')
 except:
     raise Exception("No bridge data file could be found.")
 else:
@@ -71,16 +71,25 @@ def main():
         plotLoad(load)
 
     trussAngleMatrix = np.zeros((len(data["Nodes"])*2, len(data["Members"])+3))
+    # This matrix will be as follows
+    # Nodes M01 M12 M02      Each column represents a member
+    # 0 x  |___|___|___|     and each row represents a nodes
+    #   y  |___|___|___|     reaction force angle to its member.
+    # 1 x  |___|___|___|     Reaction force angles for nodes on oppisite
+    #   y  |___|___|___|     ends of a member are equal and oppisite
     for member in data["Members"]:
         node1 = member["nodes"][0]
         node2 = member["nodes"][1]
         #get position of both nodes
         #find inverse tan of (y2-y1)/(x2-x1)
-        angleToHorizontal = math.atan((nodeInfo(node2).y-nodeInfo(node1).y)/
-                                      (nodeInfo(node2).x-nodeInfo(node1).x))
+        angleToHorizontal = math.pi/2
+        if nodeInfo(node2).x-nodeInfo(node1).x != 0:
+            angleToHorizontal = math.atan((nodeInfo(node2).y-nodeInfo(node1).y)/
+                                          (nodeInfo(node2).x-nodeInfo(node1).x))
+            
         #get cos and sin of angle
-        matrixAngleX = abs(math.cos(angleToHorizontal))
-        matrixAngleY = abs(math.sin(angleToHorizontal))
+        matrixAngleX = round(abs(math.cos(angleToHorizontal)),2)
+        matrixAngleY = round(abs(math.sin(angleToHorizontal)),2)
         #Determine positive or negative by the direction of member
         if nodeInfo(node2).x < nodeInfo(node1).x:
             matrixAngleX = -matrixAngleX
@@ -93,8 +102,7 @@ def main():
         trussAngleMatrix[node2*2, member["memberNum"]] = -matrixAngleX #2 to 1 cos()
         trussAngleMatrix[node2*2+1, member["memberNum"]] = -matrixAngleY #2 to 1 sin()
 
-    #Adding reaction force angles to angle matrix, all reaction force angles will be completely vertical or horizontal
-    ##The last three columns for the matrix will always be ordered {Reaction2y, Reaction1x, Reaction1y}
+    #Adding reaction force angles to angle matrix, all fixed reaction forces angles will be completely vertical or horizontal
     for node in constrainedNodes:
         if nodeInfo(node).isFixed:
             trussAngleMatrix[(nodeInfo(node).nodeNum)*2, trussAngleMatrix.shape[1]-1] = 1
@@ -160,13 +168,15 @@ def plotTrussForces(forces):
         nodeXs = nodeInfo(member["nodes"][0]).x, nodeInfo(member["nodes"][1]).x
         nodeYs = nodeInfo(member["nodes"][0]).y, nodeInfo(member["nodes"][1]).y
         plt.plot(nodeXs, nodeYs, "g") #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
-
+        
         centerx, centery = sum(nodeXs)/2, sum(nodeYs)/2 #Midpoint formula
 
-        angleToHorizontal = math.degrees(math.atan((nodeYs[1]-nodeYs[0])/
-                                                   (nodeXs[1]-nodeXs[0])))
+        angle = 90
+        if nodeXs[1]-nodeXs[0] != 0:
+            angle = math.degrees(math.atan((nodeYs[1]-nodeYs[0])/
+                                (nodeXs[1]-nodeXs[0])))
 
-        plt.annotate(round(forces[i], 2), (centerx, centery), rotation=angleToHorizontal, 
+        plt.annotate(round(forces[i], 2), (centerx, centery), rotation=angle, 
                      color="k", ha='center', va='center', 
                      bbox=dict(facecolor='white', edgecolor='green', boxstyle='square'))
         i += 1

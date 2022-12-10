@@ -6,6 +6,7 @@
   <li>Support for one rolling and one fixed node</li>
   <li>Supports as many load forces as you want</li>
   <li>Only allows for completely vertical load vectors (wip)</li>
+  <li>No units</li>
 </ul>
 
 Three test bridges are provided that are ready to simulate.<br>

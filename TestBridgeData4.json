@@ -1,0 +1,21 @@
+{
+    "Nodes": [
+        {"nodeNum": 0, "cords": [0,0],   "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 1, "cords": [6,6],   "fixedNode?": false, "rollingNode?": true},
+        {"nodeNum": 2, "cords": [-6,6],  "fixedNode?": true, "rollingNode?": false},
+        {"nodeNum": 3, "cords": [-6,-6], "fixedNode?": false, "rollingNode?": false},
+        {"nodeNum": 4, "cords": [6,-6],  "fixedNode?": false, "rollingNode?": false}
+    ],
+    "Members": [
+        {"memberNum": 0,  "nodes": [0,1]},
+        {"memberNum": 1,  "nodes": [0,2]},
+        {"memberNum": 2,  "nodes": [0,3]},
+        {"memberNum": 3,  "nodes": [0,4]},
+        {"memberNum": 4,  "nodes": [1,2]},
+        {"memberNum": 5,  "nodes": [2,3]},
+        {"memberNum": 6,  "nodes": [3,4]}
+    ],
+    "Loads": [
+        {"loadNumber": 0, "loadNode": 4, "loadForce": 12}
+    ]
+}
