@@ -1,4 +1,4 @@
-![Example Bridge Banner Image](/repository/BannerExample.png?raw=true "Example Bridge Test")
+![Example Bridge Banner Image](BannerExample.png?raw=true "Example Bridge Test")
 <h1 align="center">Bridge Truss Solver</h1>
 <h2 align="center">Built on Python</h2>
 <h3>This truss-simulation includes:</h3>
