@@ -12,7 +12,7 @@
   <li>Visualize members in tension and compression</li>
 </ul>
 
-Three test bridges are provided that are ready to simulate.<br>
+Four test bridges are provided that are ready to simulate.<br>
 Open the <code>BridgeSim.py</code> file and change the name of the data you want to run.<br>
 
 ``` python
@@ -22,7 +22,7 @@ try:
 except:
     raise Exception("No bridge data file could be found.")
 else:
-    data = json.load(f)
+    bridgeData = json.load(f)
     f.close()
 ```
 
@@ -43,7 +43,7 @@ Units: <br>
     <li>Density: grams per cubic centimeter</li>
     <li>Tensile & Compression Strength: Mega Pascal</li>
 </ul>
-The materials folder contains balsa wood you can experiment with for now.
+The materials folder contains balsa wood you can experiment with for now. As of the current version, density is not used and will throw an error if not included in your material file. 
 If you would like to add your own materials you can use the balsa wood as an example.<br>
 You can change the material for the bridge:<br>
 
