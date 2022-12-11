@@ -132,8 +132,12 @@ def main():
         elif nodeInfo(node).isRolling:
             trussAngleMatrix[(nodeInfo(node).nodeNum)*2+1, trussAngleMatrix.shape[1]-3] = 1
 
-    #Inverse the angle matrix (AngleMatrix^-1 * Coeffecients = Forces)
-    inverseTrussAngleMatrix = np.linalg.inv(trussAngleMatrix)
+    #Protects from singular matrices, only non singular matrices are invertible
+    if np.linalg.det(trussAngleMatrix):
+        #Inverse the angle matrix (AngleMatrix^-1 * Coeffecients = Forces)
+        inverseTrussAngleMatrix = np.linalg.inv(trussAngleMatrix)
+    else:
+        raise Exception('The truss is not statically determinate.')
 
     #Make empty list, add load to list, Transpose.
     coeffecientMatrix = np.zeros(len(bridgeData["Nodes"])*2)
