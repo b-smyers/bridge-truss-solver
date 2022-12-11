@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 plt.grid(linestyle='--', linewidth=0.5)
 plt.gca().set_aspect('equal', adjustable='box')
 
-
 useMaterial = True
 showCompressionTension = False
 showStressColoredMemers = True #Will only work while using a material
@@ -206,6 +205,8 @@ def plotMember(member, force):
 
     nodeXs = nodeInfo(member["nodes"][0]).x, nodeInfo(member["nodes"][1]).x
     nodeYs = nodeInfo(member["nodes"][0]).y, nodeInfo(member["nodes"][1]).y
+    centerx, centery = sum(nodeXs)/2, sum(nodeYs)/2 #Midpoint formula
+    memNum = member["memberNum"]
 
     if showCompressionTension:
         if force < 0:
@@ -215,15 +216,12 @@ def plotMember(member, force):
 
     plt.plot(nodeXs, nodeYs, color=tressColor) #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
 
-    centerx, centery = sum(nodeXs)/2, sum(nodeYs)/2 #Midpoint formula
-    plt.annotate(member["memberNum"], (centerx, centery), color="c")
-
     angle = 90
     if nodeXs[1]-nodeXs[0] != 0:
         angle = math.degrees(math.atan((nodeYs[1]-nodeYs[0])/
                             (nodeXs[1]-nodeXs[0])))
 
-    plt.annotate(round(force, 2), (centerx, centery), rotation=angle, 
+    plt.annotate(f"{round(force, 2)} - M{memNum}" , (centerx, centery), rotation=angle, 
                     color="k", ha='center', va='center',
                     bbox=dict(facecolor='white', edgecolor='green', boxstyle='square'))
 
