@@ -1,0 +1,7 @@
+{
+    "Name": "Balsa",
+    "CrossSectionalDimensions": [0.003175, 0.003175],
+    "Density": 0.13,
+    "CompressionStrength": 7,
+    "TensileStrength": 14
+}

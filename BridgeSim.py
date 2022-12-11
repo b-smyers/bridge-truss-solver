@@ -6,24 +6,40 @@ import matplotlib.pyplot as plt
 plt.grid(linestyle='--', linewidth=0.5)
 plt.gca().set_aspect('equal', adjustable='box')
 
+
+useMaterial = True
+showCompressionTension = False
+showStressColoredMemers = True #Will only work while using a material
+
+#Material Density g/cm^3 (Gram per cubic centimeter)
+#Material compressive and tensile strength MPa (Mega Pascal)
+#Load Material Data
+try:
+    f = open('Materials/Balsa.json')
+except:
+    raise Exception("No material data file could be found.")
+else:
+    materialData = json.load(f)
+    f.close()
+
 #Load Bridge Data
 try:
-    f = open('TestBridgeData4.json')
+    f = open('Bridges/TestBridgeData2.json')
 except:
     raise Exception("No bridge data file could be found.")
 else:
-    data = json.load(f)
+    bridgeData = json.load(f)
     f.close()
 
 def preRunBridgeChecker():
     print("Running Pre-run Bridge Checks...")
-    numOfNodes = len(data["Nodes"])
-    numOfMembers = len(data["Members"])
-    numOfLoads = len(data["Loads"])
+    numOfNodes = len(bridgeData["Nodes"])
+    numOfMembers = len(bridgeData["Members"])
+    numOfLoads = len(bridgeData["Loads"])
     numOfFixedNodes = 0
     numOfRollingNodes = 0
 
-    for node in data["Nodes"]:
+    for node in bridgeData["Nodes"]:
         if node["fixedNode?"] and node["rollingNode?"]:
             raise Exception('Nodes cannot be fixed and rolling, make sure your anchored nodes are fixed OR rolling.')
         elif node["fixedNode?"]:
@@ -49,35 +65,41 @@ def preRunBridgeChecker():
     
     #Load error catching
     loadNodes = []
-    for load in data["Loads"]:
+    for load in bridgeData["Loads"]:
         loadNodes.append(load["loadNode"])
     if sorted(loadNodes) != sorted(list(set(loadNodes))):
         raise Exception('There can only be a maximum of one load per node, make sure there isn\'t more than one load per node')
     if numOfLoads <= 0:
         raise Exception('There are no loads on the bridge, try adding some.')
 
+    #Material error catching
+    if useMaterial:
+        if "CrossSectionalDimensions" not in materialData:
+            raise Exception("Material is missing 'CrossSectionalDimensions' attribute (unit meter)")
+        if "Density" not in materialData:
+            raise Exception("Material is missing 'Density' attribute (unit g/cm^3).")
+        if "CompressionStrength" not in materialData:
+            raise Exception("Material is missing 'CompressionStrength' attribute (unit MPa).")
+        if "TensileStrength" not in materialData:
+            raise Exception("Material is missing 'TensionStrength' attribute (unit MPa).")
+    
 def main():
-    #Plot and label nodes
-    for node in data["Nodes"]:
-        plotNode(node["nodeNum"])
 
-    #Plot and label members
-    for member in data["Members"]:
-        pass
-        #plotMember(member)
+    constrainedNodes = []
+    #Store the constrained nodes
+    for node in bridgeData["Nodes"]:
+        nodeNumber = node["nodeNum"]
+        if nodeInfo(nodeNumber).isFixed or nodeInfo(nodeNumber).isRolling:
+            constrainedNodes.append(nodeNumber)
 
-    #Plot and label loads
-    for load in data["Loads"]:
-        plotLoad(load)
-
-    trussAngleMatrix = np.zeros((len(data["Nodes"])*2, len(data["Members"])+3))
+    trussAngleMatrix = np.zeros((len(bridgeData["Nodes"])*2, len(bridgeData["Members"])+3))
     # This matrix will be as follows
     # Nodes M01 M12 M02      Each column represents a member
     # 0 x  |___|___|___|     and each row represents a nodes
     #   y  |___|___|___|     reaction force angle to its member.
     # 1 x  |___|___|___|     Reaction force angles for nodes on oppisite
     #   y  |___|___|___|     ends of a member are equal and oppisite
-    for member in data["Members"]:
+    for member in bridgeData["Members"]:
         node1 = member["nodes"][0]
         node2 = member["nodes"][1]
         #get position of both nodes
@@ -114,72 +136,92 @@ def main():
     inverseTrussAngleMatrix = np.linalg.inv(trussAngleMatrix)
 
     #Make empty list, add load to list, Transpose.
-    coeffecientMatrix = np.zeros(len(data["Nodes"])*2)
-    for load in data["Loads"]:
+    coeffecientMatrix = np.zeros(len(bridgeData["Nodes"])*2)
+    for load in bridgeData["Loads"]:
         coeffecientMatrix[load["loadNode"]*2+1] = load["loadForce"]
 
     trussForceMatrix = inverseTrussAngleMatrix.dot(coeffecientMatrix.T)
 
-    plotTrussForces(trussForceMatrix)
+    #Plot and label nodes
+    for node in bridgeData["Nodes"]:
+        plotNode(node["nodeNum"])
+
+    #Plot and label members
+    for i in range(len(bridgeData["Members"])):
+        plotMember(bridgeData["Members"][i], trussForceMatrix[i])
+
+    #Plot and label loads
+    for load in bridgeData["Loads"]:
+        plotLoad(load)
+
 
 class Node(object):
     def __init__(self, nodeNum):
         self.nodeNum = nodeNum
-        self.position = data["Nodes"][nodeNum]["cords"]
+        self.position = bridgeData["Nodes"][nodeNum]["cords"]
         self.x = self.position[0]
         self.y = self.position[1]
-        self.isFixed = data["Nodes"][nodeNum]["fixedNode?"]
-        self.isRolling = data["Nodes"][nodeNum]["rollingNode?"]
+        self.isFixed = bridgeData["Nodes"][nodeNum]["fixedNode?"]
+        self.isRolling = bridgeData["Nodes"][nodeNum]["rollingNode?"]
 
 def nodeInfo(nodeNum: int):
     nodeInfo = Node(nodeNum)
     return nodeInfo
 
-constrainedNodes = []
-
 def plotNode(node):
     if nodeInfo(node).isFixed or nodeInfo(node).isRolling:
         plt.plot(nodeInfo(node).x, nodeInfo(node).y, "ko")
-        constrainedNodes.append(node)
     else:
         plt.plot(nodeInfo(node).x, nodeInfo(node).y, "bo")
 
     plt.annotate(node, (nodeInfo(node).x, nodeInfo(node).y), color="m")
 
-def plotMember(member):
-    nodeXs = nodeInfo(member["nodes"][0]).x, nodeInfo(member["nodes"][1]).x
-    nodeYs = nodeInfo(member["nodes"][0]).y, nodeInfo(member["nodes"][1]).y
-    plt.plot(nodeXs, nodeYs, "g") #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
-
-    centerx, centery = sum(nodeXs)/2, sum(nodeYs)/2 #Midpoint formula
-    plt.annotate(member["memberNum"], (centerx, centery), color="c")
-
 def plotLoad(load):
     loadX = nodeInfo(load["loadNode"]).x
     loadY = nodeInfo(load["loadNode"]).y
     plt.arrow(x=loadX, y=loadY,
-                dx=0,    dy=-load["loadForce"]/100,
+                dx=0,    dy=-load["loadForce"]/200,
                 width=0.03, color="r")
-    plt.annotate(load["loadNumber"], (loadX, (loadY-load["loadForce"]/100)/2), color="c")
+    plt.annotate(load["loadNumber"], (loadX, (loadY-load["loadForce"]/200)/2), color="c")
 
-def plotTrussForces(forces):
-    i = 0
-    for member in data["Members"]:
-        nodeXs = nodeInfo(member["nodes"][0]).x, nodeInfo(member["nodes"][1]).x
-        nodeYs = nodeInfo(member["nodes"][0]).y, nodeInfo(member["nodes"][1]).y
-        plt.plot(nodeXs, nodeYs, "g") #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
-        
-        centerx, centery = sum(nodeXs)/2, sum(nodeYs)/2 #Midpoint formula
+def plotMember(member, force):
+    tressColor = "g" #Forces between half load and zero load are green
 
-        angle = 90
-        if nodeXs[1]-nodeXs[0] != 0:
-            angle = math.degrees(math.atan((nodeYs[1]-nodeYs[0])/
-                                (nodeXs[1]-nodeXs[0])))
+    if useMaterial:
+        #Breaking forces are in Newtons
+        maxCompressionForce = ((materialData["CompressionStrength"] * 1000000) * 
+                                    (materialData["CrossSectionalDimensions"][0] * materialData["CrossSectionalDimensions"][1]))
+        maxTensileForce = ((materialData["TensileStrength"] * 1000000) * 
+                                (materialData["CrossSectionalDimensions"][0] * materialData["CrossSectionalDimensions"][1]))
 
-        plt.annotate(round(forces[i], 2), (centerx, centery), rotation=angle, 
-                     color="k", ha='center', va='center', 
-                     bbox=dict(facecolor='white', edgecolor='green', boxstyle='square'))
-        i += 1
+        if showStressColoredMemers:
+            if force > maxTensileForce or -force > maxCompressionForce:
+                tressColor = "r" #Members that will break are red
+            elif (force < maxTensileForce and force > maxTensileForce*.5) or (-force < maxCompressionForce and -force > maxCompressionForce*.5):
+                tressColor = "y" #Forces between breaking load and half of breaking load are yellow
+
+    nodeXs = nodeInfo(member["nodes"][0]).x, nodeInfo(member["nodes"][1]).x
+    nodeYs = nodeInfo(member["nodes"][0]).y, nodeInfo(member["nodes"][1]).y
+
+    if showCompressionTension:
+        if force < 0:
+            plt.plot(nodeXs, nodeYs, color="r", lw=3) #negative forces are compressive and are colored red
+        else:
+            plt.plot(nodeXs, nodeYs, color="b", lw=3) #positive forces are tensile and are colored blue
+
+    plt.plot(nodeXs, nodeYs, color=tressColor) #matplotlib wants a (x, x, ...), (y, y, ...) list for some dumb reason
+
+    centerx, centery = sum(nodeXs)/2, sum(nodeYs)/2 #Midpoint formula
+    plt.annotate(member["memberNum"], (centerx, centery), color="c")
+
+    angle = 90
+    if nodeXs[1]-nodeXs[0] != 0:
+        angle = math.degrees(math.atan((nodeYs[1]-nodeYs[0])/
+                            (nodeXs[1]-nodeXs[0])))
+
+    plt.annotate(round(force, 2), (centerx, centery), rotation=angle, 
+                    color="k", ha='center', va='center',
+                    bbox=dict(facecolor='white', edgecolor='green', boxstyle='square'))
 
 if __name__=="__main__":
     print("Starting...")
