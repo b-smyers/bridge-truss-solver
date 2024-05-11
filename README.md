@@ -59,5 +59,3 @@ else:
 ```
 
 While using a material you can visualize the general stress on each member.<br>
-I am very new to Github and am learning the ropes. <3<br>
-*If you have any questions about the project or wish to contact me, leave a comment somewhere. I might find it. Hopefully anyone who stumbles across this will find it useful.*
